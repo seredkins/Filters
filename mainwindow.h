@@ -27,7 +27,7 @@ public:
 
 
 private:
-    static const int BUTTONS_COUNT = 6;
+    static const int BUTTONS_COUNT = 11;
     QLabel* draw_widget;
     QHBoxLayout *hlayout;
     QVBoxLayout *vlayout;
@@ -67,6 +67,13 @@ private slots:
     void middleBlur();
     void medialFilter();
     void sharpness();
+    void toGray();
+
+    // Convertors
+    void rotate90();
+    void rotate270();
+    void swapHorizontal();
+    void swapVertical();
 };
 
 #endif // MAINWINDOW_H

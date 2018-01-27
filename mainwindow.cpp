@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     central->setLayout(vlayout);
     setCentralWidget(central);
 
-    setFixedSize(800, 600);
+    setFixedSize(1500, 600);
 
     //initializing BOX by default
     box.set_size(3);
@@ -40,20 +40,40 @@ MainWindow::MainWindow(QWidget *parent) :
     sigma = 1; //initializing sigma for gaussian filter
     alpha = 1; //initializing alpha for sharpness
 
+    // Functions for working with image layout
     connect(open_button, SIGNAL(clicked(bool)), this, SLOT(openImage()));
+
+    // Correctors
     connect(buttons[0], SIGNAL(clicked(bool)), this, SLOT(linearCorrection()));
     connect(buttons[1], SIGNAL(clicked(bool)), this, SLOT(colorCorrection()));
+
+    // Filters
     connect(buttons[2], SIGNAL(clicked(bool)), this, SLOT(middleBlur()));
     connect(buttons[3], SIGNAL(clicked(bool)), this, SLOT(gaussianBlur()));
     connect(buttons[4], SIGNAL(clicked(bool)), this, SLOT(medialFilter()));
-    connect(buttons[5], SIGNAL(clicked(bool)), this, SLOT(sharpness()));
+    connect(buttons[5], SIGNAL(clicked(bool)), this, SLOT(sharpness()));  
+    connect(buttons[6], SIGNAL(clicked(bool)), this, SLOT(toGray()));
+
+    // Converters
+    connect(buttons[7], SIGNAL(clicked(bool)), this, SLOT(rotate90()));
+    connect(buttons[8], SIGNAL(clicked(bool)), this, SLOT(rotate270()));
+    connect(buttons[9], SIGNAL(clicked(bool)), this, SLOT(swapHorizontal()));
+    connect(buttons[10], SIGNAL(clicked(bool)), this, SLOT(swapVertical()));
+
 
     buttons[0]->setText("Linear Correction");
     buttons[1]->setText("Color Correction");
+
     buttons[2]->setText("Middle Blur");
     buttons[3]->setText("Gaussian Blur");
     buttons[4]->setText("Medial Filter");
     buttons[5]->setText("Sharpness");
+    buttons[6]->setText("Make Grayscale");
+
+    buttons[7]->setText("Rotete ->");
+    buttons[8]->setText("Rotete <-");
+    buttons[9]->setText("Swap Horizontal");
+    buttons[10]->setText("Swap Vertical");
 
 }
 
@@ -138,13 +158,9 @@ void MainWindow::getBrightnessBorders(){
     y_min = qGray(255, 255, 255);
     y_max = qGray(0, 0, 0);
 
-//    y_min = wight.lightness();
-//    y_min = black.lightness();
-
     for (int i = 0; i < image->width(); ++i)
         for (int j = 0; j < image->height(); ++j){
 
-//            QColor pix = image->pixel(i, j);
             int pix_bright = qGray(image->pixel(i, j));
 
             if (pix_bright > y_max)
@@ -330,5 +346,64 @@ void MainWindow::sharpness(){
 
             image->setPixel(i, j, qRgb(red, green, blue));
     }
+    updateImage();
+}
+
+void MainWindow::toGray(){
+
+    for (int i = 0; i < image->width(); ++i)
+        for (int j = 0; j < image->height(); ++j)
+            image->setPixel(i, j, qRgb(qGray(image->pixel(i, j)),
+                                       qGray(image->pixel(i, j)),
+                                       qGray(image->pixel(i, j))));
+
+    updateImage();
+}
+
+
+// Converters
+void MainWindow::rotate90(){
+    QImage ret(image->height(), image->width(), image->format());
+
+    for (int i = 0; i < image->width(); ++i)
+        for (int j = 0; j < image->height(); ++j)
+            ret.setPixel(image->height() - j - 1, i, image->pixel(i, j));
+
+    *image = ret;
+    updateImage();
+}
+
+void MainWindow::rotate270(){
+    QImage ret(image->height(), image->width(), image->format());
+
+    for (int i = 0; i < image->width(); ++i)
+        for (int j = 0; j < image->height(); ++j)
+            ret.setPixel(j, image->width() - i - 1, image->pixel(i, j));
+
+    *image = ret;
+    updateImage();
+}
+
+void MainWindow::swapHorizontal(){
+    for (int i = 0; i < image->width() / 2; ++i)
+        for (int j = 0; j < image->height(); ++j) {
+
+            QRgb buff = image->pixel(i, j);
+            image->setPixel(i, j, image->pixel(image->width() - i - 1, j));
+            image->setPixel(image->width() - i - 1, j, buff);
+        }
+
+    updateImage();
+}
+
+void MainWindow::swapVertical(){
+    for (int i = 0; i < image->width(); ++i)
+        for (int j = 0; j < image->height() / 2; ++j) {
+
+            QRgb buff = image->pixel(i, j);
+            image->setPixel(i, j, image->pixel(i, image->height() - j - 1));
+            image->setPixel(i, image->height() - j - 1, buff);
+        }
+
     updateImage();
 }
